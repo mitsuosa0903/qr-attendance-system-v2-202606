@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>【入館】QR勤怠管理システム</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eafaf1;
+            /* 背景色 緑 */
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #27ae60;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #eef2f5;
+            border-radius: 8px;
+            border-left: 5px solid #bdc3c7;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        /* ステータスの色分け */
+        .status.info {
+            border-left-color: #3498db;
+            background-color: #ebf5fb;
+            color: #2980b9;
+        }
+
+        .status.success {
+            border-left-color: #2ecc71;
+            background-color: #eafaf1;
+            color: #27ae60;
+        }
+
+        .status.error {
+            border-left-color: #e74c3c;
+            background-color: #fdedec;
+            color: #c0392b;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            background-color: #27ae60;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #2ecc71;
+        }
+
+        #camera-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #111;
+            display: none;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #camera-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🟢 QR入館システム (IN)</h1>
+    </header>
+
+    <main>
+        <h2>入館打刻</h2>
+
+        <button id="start-btn" onclick="startScan()">📷 カメラを起動して入館記録</button>
+
+        <div id="camera-container">
+            <!-- バックエンドからストリーミングされる映像を表示 -->
+            <img id="video-stream" src="" alt="カメラ映像">
+        </div>
+
+        <div id="status-box" class="status info">
+            <strong>システム状態</strong><br>
+            <span id="status-text">待機中 (カメラ起動前)</span>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/add_user" style="color: #3498db; text-decoration: none;">社員登録画面へ</a>
+        </div>
+    </main>
+
+    <footer>
+        © QR Attendance System
+    </footer>
+
+    <script>
+        let pollingInterval = null;
+
+        function startScan() {
+            document.getElementById("start-btn").style.display = "none";
+            document.getElementById("camera-container").style.display = "block";
+            document.getElementById("video-stream").src = "/video_feed";
+            if (!pollingInterval) {
+                pollingInterval = setInterval(fetchStatus, 1000);
+            }
+        }
+
+        function fetchStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusBox = document.getElementById("status-box");
+                    const statusText = document.getElementById("status-text");
+                    statusText.innerText = data.message;
+                    statusBox.className = "status " + data.type;
+                })
+                .catch(error => console.error('Error fetching status:', error));
+        }
+    </script>
+
+</body>
+
+</html>

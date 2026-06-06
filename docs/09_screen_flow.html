@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画面遷移図 - QR勤怠管理システム</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 960px;
+            width: 100%;
+        }
+        h1 {
+            color: #1e293b;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary);
+            padding-left: 15px;
+        }
+        h2 {
+            color: #334155;
+            font-size: 1.2rem;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .description {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        .diagram-wrapper {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin-bottom: 32px;
+        }
+        /* テーブル */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+            margin-bottom: 16px;
+        }
+        th {
+            background-color: #eef2ff;
+            color: #3730a3;
+            text-align: left;
+            padding: 10px 14px;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #7c3aed;
+        }
+        footer {
+            margin-top: 30px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>画面遷移図 (Screen Transition Diagram)</h1>
+
+        <div class="description">
+            <p>本システムは、打刻ミス防止のために用途ごとに役割を分離した <strong>3つの独立したFlaskアプリ（ポート）</strong> で構成されています。
+            それぞれのアプリが持つ画面とその遷移、および共通データベースとの関係を以下に示します。</p>
+        </div>
+
+        <h2>1. 全体俯瞰図</h2>
+        <div class="diagram-wrapper">
+            <pre class="mermaid">
+graph TD
+    subgraph IN ["【出勤用端末】 Port 5001"]
+        IN_Main["入館打刻画面 (/)"] <--> IN_Add["社員登録画面 (/add_user)"]
+    end
+
+    subgraph OUT ["【退勤用端末】 Port 5002"]
+        OUT_Main["退館打刻画面 (/)"] <--> OUT_Add["社員登録画面 (/add_user)"]
+    end
+
+    subgraph ADMIN ["【管理者用画面】 Port 5003"]
+        ADMIN_Dash["管理ダッシュボード (/)"]
+        ADMIN_Dash --> QR_DL["QRコード再発行 (ダウンロード)"]
+    end
+
+    IN_Main    -.->|scan_logs へ記録| DB[(共通DB<br>attendance.db)]
+    OUT_Main   -.->|scan_logs へ記録| DB
+    IN_Add     -.->|users へ登録| DB
+    ADMIN_Dash -.->|全テーブルを参照| DB
+
+    style IN    fill:#e0f2fe,stroke:#0369a1
+    style OUT   fill:#fef2f2,stroke:#b91c1c
+    style ADMIN fill:#f0fdf4,stroke:#15803d
+    style DB    fill:#faf5ff,stroke:#7e22ce
+            </pre>
+        </div>
+
+        <h2>2. 各画面の詳細</h2>
+
+        <h3 style="color:#0369a1; margin-bottom:8px;">2-1. 出勤・退勤用端末（Port 5001 / 5002）</h3>
+        <p style="color:#64748b; margin-bottom:12px;">作業員が「かざすだけ」で操作を完結させるためのシンプルな構成です。</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>画面名</th>
+                    <th>パス</th>
+                    <th>主な操作・機能</th>
+                    <th>遷移先</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>打刻メイン</strong></td>
+                    <td><code>/</code></td>
+                    <td>カメラ起動、QRコード検知、打刻結果のリアルタイム表示</td>
+                    <td>社員登録画面へ</td>
+                </tr>
+                <tr>
+                    <td><strong>社員登録</strong></td>
+                    <td><code>/add_user</code></td>
+                    <td>新規ユーザー登録、QRコードの自動生成・ダウンロード</td>
+                    <td>打刻メインへ</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="color:#15803d; margin-top:24px; margin-bottom:8px;">2-2. 管理者用画面（Port 5003）</h3>
+        <p style="color:#64748b; margin-bottom:12px;">勤怠状況を一元管理するダッシュボードです。</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>画面名</th>
+                    <th>パス</th>
+                    <th>主な操作・機能</th>
+                    <th>遷移先</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>管理ダッシュボード</strong></td>
+                    <td><code>/</code></td>
+                    <td>出退勤の自動集計、生の打刻ログ表示、ユーザー一覧確認</td>
+                    <td>QRコード再発行（ダウンロード）</td>
+                </tr>
+                <tr>
+                    <td><strong>QRコードDL</strong></td>
+                    <td><code>/qr_download/&lt;user_id&gt;</code></td>
+                    <td>指定ユーザーのQRコード画像をダウンロード（再発行）</td>
+                    <td>—</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        &copy; QR Attendance System Project - Screen Transition Diagram
+    </footer>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#e0e7ff',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#4f46e5',
+                lineColor: '#6366f1',
+                secondaryColor: '#f1f5f9',
+                tertiaryColor: '#fff'
+            }
+        });
+    </script>
+</body>
+</html>

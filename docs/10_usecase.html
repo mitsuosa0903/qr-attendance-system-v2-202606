@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ユースケース図 - QR勤怠管理システム</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            color: #1e293b;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary);
+            padding-left: 15px;
+        }
+        .description {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+        .diagram-wrapper {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+        footer {
+            margin-top: 30px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ユースケース図 (Use Case Diagram)</h1>
+        
+        <div class="description">
+            <p>本図は、QR勤怠管理システムにおける主要なユーザー（アクター）と、システムが提供する機能（ユースケース）の関係を示したものです。
+            「従業員」による非接触打刻と、「管理者」によるデータ管理の責務を明確に分離しています。</p>
+        </div>
+
+        <div class="diagram-wrapper">
+            <pre class="mermaid">
+flowchart LR
+    subgraph Actors [アクター]
+        Emp["従業員 (Employee)"]
+        Admin["管理者 (Admin)"]
+    end
+
+    subgraph System [QR勤怠管理システム]
+        UC1(["出勤打刻を行う<br/>(QRスキャン)"])
+        UC2(["退勤打刻を行う<br/>(QRスキャン)"])
+        UC3(["社員登録を行う"])
+        UC4(["専用QRを発行・印刷する"])
+        UC5(["打刻履歴を確認・集計する"])
+    end
+
+    Emp --- UC1
+    Emp --- UC2
+    Admin --- UC3
+    Admin --- UC4
+    Admin --- UC5
+            </pre>
+        </div>
+    </div>
+
+    <footer>
+        &copy; QR Attendance System Project - Use Case Documentation
+    </footer>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#e0e7ff',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#4f46e5',
+                lineColor: '#6366f1',
+                secondaryColor: '#f1f5f9',
+                tertiaryColor: '#fff'
+            }
+        });
+    </script>
+</body>
+</html>

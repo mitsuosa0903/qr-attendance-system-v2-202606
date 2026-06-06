@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勤怠管理 - 管理画面</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --border-color: #E5E7EB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: var(--card-bg);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 600px;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #F9FAFB;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+
+        tr:hover {
+            background-color: #F9FAFB;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-in {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+
+        .badge-out {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .badge-finished {
+            background-color: #E0E7FF;
+            color: #3730A3;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🏢 勤怠管理システム - 管理ダッシュボード</h1>
+            <button onclick="location.reload()" class="btn">🔄 最新データに更新</button>
+        </header>
+
+        <!-- メッセージ表示エリア -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div style="background-color: #DEF7EC; color: #03543F; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #BCF0DA;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- 【1】集計済み 出退勤一覧 -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">📊 本日の出退勤一覧 (ペア集計済み)</h2>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>日付</th>
+                            <th>社員ID</th>
+                            <th>氏名</th>
+                            <th>出勤時間</th>
+                            <th>退勤時間</th>
+                            <th>ステータス</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in attendances %}
+                        <tr>
+                            <td>{{ row.work_date }}</td>
+                            <td>{{ row.user_id }}</td>
+                            <td>{{ row.user_name }}</td>
+                            <td>{{ row.check_in_time.split(" ")[1] if row.check_in_time else '-' }}</td>
+                            <td>{{ row.check_out_time.split(" ")[1] if row.check_out_time else '-' }}</td>
+                            <td>
+                                <span class="badge badge-finished">完了</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted);">本日の勤怠データはまだありません</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- 【2】生の打刻ログ -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">🕒 生の打刻ログ (直近50件)</h2>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>打刻時間</th>
+                                <th>打刻種類</th>
+                                <th>社員ID(氏名)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in logs %}
+                            <tr>
+                                <td>{{ row.scan_time }}</td>
+                                <td>
+                                    {% if row.scan_type == 'IN' %}
+                                    <span class="badge badge-in">入館</span>
+                                    {% else %}
+                                    <span class="badge badge-out">退館</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ row.user_id }} ({{ row.user_name }})</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: var(--text-muted);">打刻ログはありません</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 【3】登録ユーザー一覧 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">👥 登録済みユーザー一覧</h2>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>社員ID</th>
+                                <th>氏名</th>
+                                <th>登録日</th>
+                                <th>アクション</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.user_id }}</td>
+                                <td>{{ user.user_name }}</td>
+                                <td>{{ user.created_at.split(" ")[0] if user.created_at else '-' }}</td>
+                                <td>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <a href="/qr_download/{{ user.user_id }}" class="btn"
+                                            style="padding: 0.25rem 0.5rem; font-size: 0.75rem; text-decoration: none;">⬇️
+                                            QR再発行</a>
+                                        <form action="/delete_user/{{ user.user_id }}" method="POST"
+                                            onsubmit="return confirm('本当にこのユーザーを削除しますか？（打刻ログも削除されます）')">
+                                            <button type="submit" class="btn"
+                                                style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background-color: #EF4444;">🗑️
+                                                削除</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted);">ユーザーが登録されていません
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
