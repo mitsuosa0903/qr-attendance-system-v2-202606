@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+venv/
+env/
+.venv/
+
+# SQLite Databse
+db/attendance.db
+*.sqlite3
+tests/test_attendance.db
+tests/*.db
+
+# Generated files
+qrcodes/
+*.log
+temp_venv/
+
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+
+# Private Interview Materials
+private_interview_prep/
+job_hunter/
+
+# GitHub upload notes (internal memo)
+github前注意事項.rtfd/
