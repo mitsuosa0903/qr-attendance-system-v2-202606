@@ -15,9 +15,13 @@
 ![管理画面](docs/images/dashboard.png)
 *当日の打刻状況、ユーザー一覧、生の打刻ログをリアルタイムに確認・管理できます。*
 
-### 📥 入館・退館用端末 (in_app / out_app)
-![端末画面](docs/images/inbound_ui.png)
-*現場設置用のUIレス端末。カメラにQRをかざすだけで、自動で出退勤が記録されます。*
+### 📥 入館用端末 (in_app)
+![入館画面](docs/images/inbound_ui.png)
+*入口設置用の入館打刻専用画面。*
+
+### 📤 退館用端末 (out_app)
+![退館画面](docs/images/outbound_ui.png)
+*出口設置用の退館打刻専用画面。*
 
 ---
 
